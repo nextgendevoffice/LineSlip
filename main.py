@@ -9,7 +9,7 @@ import configparser
 
 app = Flask(__name__)
 
-# Read channel access token and channel secret from the line_secret_key.txt file
+# Read channel access token and channel secret from the line_secret_key.txt 
 config = configparser.ConfigParser()
 config.read('line_secret_key.txt')
 channel_access_token = config.get('line', 'channel_access_token')
