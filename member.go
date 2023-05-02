@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"os"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -15,8 +16,22 @@ type MemberSystem struct {
 }
 
 func NewMemberSystem() *MemberSystem {
+	clientOptions := options.Client().ApplyURI(os.Getenv("MONGODB_URI"))
+	client, err := mongo.Connect(context.Background(), clientOptions)
+	if err != nil {
+		log.Fatalf("Error connecting to MongoDB: %v", err)
+	}
+
+	err = client.Ping(context.Background(), nil)
+	if err != nil {
+		log.Fatalf("Error pinging MongoDB: %v", err)
+	}
+
+	log.Println("Connected to MongoDB")
+	db := client.Database("your_database_name")
+
 	return &MemberSystem{
-		db: initDB(),
+		db: db,
 	}
 }
 
