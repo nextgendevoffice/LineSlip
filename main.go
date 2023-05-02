@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -93,48 +92,11 @@ func handleTextMessage(event *linebot.Event, message *linebot.TextMessage) {
 	replyText(event.ReplyToken, "กรุณาส่งสลิปเพื่อเช็คสลิปได้เลยค่ะ")
 }
 
-func fetchDataFromAPI(input string) (string, error) {
-	apiURL := fmt.Sprintf("https://fast888.co/api/get_tr_detail/%s", input)
-	log.Printf("Sending request to API: %s", apiURL) // Log the request URL
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", apiURL, nil)
-	if err != nil {
-		fmt.Printf("Error creating request: %v\n", err)
-		return "", err
-	}
-
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36")
-	resp, err := client.Do(req)
-	if resp.StatusCode != http.StatusOK {
-		fmt.Printf("API returned non-200 status code: %d\n", resp.StatusCode)
-		return "", fmt.Errorf("API returned non-200 status code: %d", resp.StatusCode)
-	}
-
-	var result map[string]interface{}
-	err = json.NewDecoder(resp.Body).Decode(&result)
-	if err != nil {
-		fmt.Printf("Error decoding API response: %v\n", err)
-		return "", err
-	}
-
-	// Log the API response result
-	log.Printf("API response result: %v", result)
-
-	// Extract the desired information from the result map
-	data, ok := result["data"].(string)
-	if !ok {
-		fmt.Printf("Error extracting data field from API response: %v\n", result)
-		return "", fmt.Errorf("Error extracting data field from API response")
-	}
-
-	return data, nil
-}
-
 func handleImageMessage(event *linebot.Event, message *linebot.ImageMessage) {
 	userID := event.Source.UserID
 
 	if !memberSystem.IsMember(userID) {
-		replyText(event.ReplyToken, "กรุณาใช้คำสั่ง /join เพื่อใช้งานเช็คสลิป")
+		replyText(event.ReplyToken, "Please join by sending /join command")
 		return
 	}
 
@@ -164,13 +126,7 @@ func handleImageMessage(event *linebot.Event, message *linebot.ImageMessage) {
 	if err != nil {
 		replyText(event.ReplyToken, "Error decoding QR code")
 	} else {
-		var apiResult string
-		apiResult, err = fetchDataFromAPI(decodedString)
-		if err != nil {
-			replyText(event.ReplyToken, "Error fetching data from API")
-		} else {
-			replyText(event.ReplyToken, fmt.Sprintf("Decoded content: %s\nAPI Result: %s", decodedString, apiResult))
-		}
+		replyText(event.ReplyToken, fmt.Sprintf("Decoded content: %s", decodedString))
 	}
 }
 
