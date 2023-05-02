@@ -50,33 +50,23 @@ func main() {
 	http.ListenAndServe(":"+port, nil)
 }
 
-func fetchTransactionDetails(qrString string) (*TransactionDetails, error) {
-	url := fmt.Sprintf("https://fast888.co/api/get_tr_detail/%s", qrString)
-	response, err := http.Get(url)
+func fetchTransactionDetails(qrCode string) (*TransactionDetails, error) {
+	url := fmt.Sprintf("https://fast888.co/api/get_tr_detail/%s", qrCode)
+	resp, err := http.Get(url)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error fetching transaction details: %v", err)
 	}
-	defer response.Body.Close()
+	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	// Log the response body
-	log.Println("Response from API:", string(body))
-
-	// Check if the response contains an error
-	var errorResponse APIErrorResponse
-	err = json.Unmarshal(body, &errorResponse)
-	if err == nil && errorResponse.ErrorCode != 0 {
-		return nil, fmt.Errorf("API error, error code: %d", errorResponse.ErrorCode)
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := ioutil.ReadAll(resp.Body)
+		log.Printf("Response from API: %s", string(bodyBytes))
+		return nil, fmt.Errorf("error fetching transaction details: status code %d", resp.StatusCode)
 	}
 
 	var details TransactionDetails
-	err = json.Unmarshal(body, &details)
-	if err != nil {
-		return nil, err
+	if err := json.NewDecoder(resp.Body).Decode(&details); err != nil {
+		return nil, fmt.Errorf("error decoding transaction details: %v", err)
 	}
 
 	return &details, nil
