@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 
@@ -48,7 +49,9 @@ func handleCallback(w http.ResponseWriter, r *http.Request) {
 			handleMessage(event)
 
 		case linebot.EventTypeFollow:
-			memberSystem.AddMember(event.Source.UserID)
+			userID := event.Source.UserID
+			memberSystem.AddMember(userID)
+			log.Printf("User %s followed the account and was added as a member", userID)
 
 		case linebot.EventTypePostback:
 			handlePostback(event)
@@ -69,12 +72,14 @@ func handleTextMessage(event *linebot.Event, message *linebot.TextMessage) {
 	userID := event.Source.UserID
 
 	if !memberSystem.IsMember(userID) {
+		log.Printf("User %s is not a member", userID)
 		replyText(event.ReplyToken, "Please join by sending /join command")
 		return
 	}
 
 	if message.Text == "/join" {
 		memberSystem.AddMember(userID)
+		log.Printf("User %s joined", userID)
 		replyText(event.ReplyToken, "You are now a member")
 		return
 	}
