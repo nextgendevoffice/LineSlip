@@ -16,6 +16,7 @@ var (
 )
 
 func main() {
+	memberSystem = NewMemberSystem()
 	var err error
 	bot, err = linebot.New(os.Getenv("LINE_CHANNEL_SECRET"), os.Getenv("LINE_CHANNEL_TOKEN"))
 	if err != nil {
