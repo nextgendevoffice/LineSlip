@@ -97,19 +97,30 @@ func fetchDataFromAPI(input string) (string, error) {
 	apiURL := fmt.Sprintf("https://fast888.co/api/get_tr_detail/%s", input)
 	resp, err := http.Get(apiURL)
 	if err != nil {
+		fmt.Printf("Error sending request to API: %v\n", err)
 		return "", err
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		fmt.Printf("API returned non-200 status code: %d\n", resp.StatusCode)
+		return "", fmt.Errorf("API returned non-200 status code: %d", resp.StatusCode)
+	}
+
 	var result map[string]interface{}
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
+		fmt.Printf("Error decoding API response: %v\n", err)
 		return "", err
 	}
 
 	// Extract the desired information from the result map
 	// For example, if you want to extract the field "data"
-	data := result["data"].(string)
+	data, ok := result["data"].(string)
+	if !ok {
+		fmt.Printf("Error extracting data field from API response: %v\n", result)
+		return "", fmt.Errorf("Error extracting data field from API response")
+	}
 
 	return data, nil
 }
