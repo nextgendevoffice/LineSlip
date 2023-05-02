@@ -3,8 +3,8 @@ module nextgendevoffice.com/qr-code-line-bot
 go 1.20
 
 require (
-	github.com/kaxap/gozxing v1.0.5
 	github.com/line/line-bot-sdk-go v7.4.0+incompatible
+	github.com/makiuchi-d/gozxing v0.1.1
 )
 
 require (

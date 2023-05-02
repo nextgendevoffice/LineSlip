@@ -7,8 +7,8 @@ import (
 	_ "image/png"
 	"os"
 
-	"github.com/kaxap/gozxing"
-	"github.com/kaxap/gozxing/qrcode"
+	"github.com/makiuchi-d/gozxing"
+	"github.com/makiuchi-d/gozxing/qrcode"
 )
 
 func DecodeQRCode(filePath string) (string, error) {
@@ -25,10 +25,10 @@ func DecodeQRCode(filePath string) (string, error) {
 
 	bmp, _ := gozxing.NewBinaryBitmapFromImage(img)
 	qrReader := qrcode.NewQRCodeReader()
-	result, err := qrReader.Decode(bmp, nil)
+	result, err := qrReader.DecodeWithoutHints(bmp)
 
 	if err != nil {
-		if _, ok := err.(gozxing.NotFound); ok {
+		if _, ok := err.(gozxing.NotFoundException); ok {
 			return "", errors.New("QR code not found")
 		}
 		return "", err
