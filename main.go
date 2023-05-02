@@ -25,6 +25,9 @@ type TransactionDetails struct {
 	Timestamp     string `json:"timestamp"`
 	TransactionID string `json:"transaction_id"`
 }
+type APIErrorResponse struct {
+	ErrorCode int `json:"error_code"`
+}
 
 func main() {
 	memberSystem = NewMemberSystem()
@@ -62,6 +65,13 @@ func fetchTransactionDetails(qrString string) (*TransactionDetails, error) {
 
 	// Log the response body
 	log.Println("Response from API:", string(body))
+
+	// Check if the response contains an error
+	var errorResponse APIErrorResponse
+	err = json.Unmarshal(body, &errorResponse)
+	if err == nil && errorResponse.ErrorCode != 0 {
+		return nil, fmt.Errorf("API error, error code: %d", errorResponse.ErrorCode)
+	}
 
 	var details TransactionDetails
 	err = json.Unmarshal(body, &details)
@@ -162,19 +172,25 @@ func handleImageMessage(event *linebot.Event, message *linebot.ImageMessage) {
 	if err != nil {
 		replyText(event.ReplyToken, "Error decoding QR code")
 	} else {
-		transactionDetails, err := fetchTransactionDetails(decodedString)
+		// Fetch transaction details using the decoded QR code string
+		details, err := fetchTransactionDetails(decodedString)
 		if err != nil {
-			replyText(event.ReplyToken, "Error fetching transaction details")
-		} else {
-			replyText(event.ReplyToken, fmt.Sprintf("ยอดโอน: %s บาท\nโอนจากธนาคาร: %s\nผู้โอน : %s\nผู้รับเงิน: %s\nเวลา: %s\nเลขที่ : %s",
-				transactionDetails.Amount,
-				transactionDetails.FromBank,
-				transactionDetails.Sender,
-				transactionDetails.Receiver,
-				transactionDetails.Timestamp,
-				transactionDetails.TransactionID,
-			))
+			log.Println("Error fetching transaction details:", err)
+			replyText(event.ReplyToken, "Failed to fetch transaction details. Please try again later.")
+			return
 		}
+
+		// Format the transaction details as a readable message
+		message := fmt.Sprintf(
+			"ยอดโอน: %s บาท\nโอนจากธนาคาร: \nผู้โอน : %s\nผู้รับเงิน: %s\nเวลา: %s\nเลขที่ : %s",
+			details.Amount,
+			details.Sender,
+			details.Receiver,
+			details.Timestamp,
+			details.TransactionID,
+		)
+
+		replyText(event.ReplyToken, message)
 	}
 }
 
