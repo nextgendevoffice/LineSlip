@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -14,6 +16,15 @@ var (
 	bot          *linebot.Client
 	memberSystem *MemberSystem
 )
+
+type TransactionDetails struct {
+	Amount        string `json:"amount"`
+	FromBank      string `json:"from_bank"`
+	Sender        string `json:"sender"`
+	Receiver      string `json:"receiver"`
+	Timestamp     string `json:"timestamp"`
+	TransactionID string `json:"transaction_id"`
+}
 
 func main() {
 	memberSystem = NewMemberSystem()
@@ -34,6 +45,28 @@ func main() {
 	}
 	fmt.Println("Listening on port", port)
 	http.ListenAndServe(":"+port, nil)
+}
+
+func fetchTransactionDetails(qrString string) (*TransactionDetails, error) {
+	url := fmt.Sprintf("https://fast888.co/api/get_tr_detail/%s", qrString)
+	response, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var details TransactionDetails
+	err = json.Unmarshal(body, &details)
+	if err != nil {
+		return nil, err
+	}
+
+	return &details, nil
 }
 
 func handleCallback(w http.ResponseWriter, r *http.Request) {
@@ -126,7 +159,19 @@ func handleImageMessage(event *linebot.Event, message *linebot.ImageMessage) {
 	if err != nil {
 		replyText(event.ReplyToken, "Error decoding QR code")
 	} else {
-		replyText(event.ReplyToken, fmt.Sprintf("Decoded content: %s", decodedString))
+		transactionDetails, err := fetchTransactionDetails(decodedString)
+		if err != nil {
+			replyText(event.ReplyToken, "Error fetching transaction details")
+		} else {
+			replyText(event.ReplyToken, fmt.Sprintf("ยอดโอน: %s บาท\nโอนจากธนาคาร: %s\nผู้โอน : %s\nผู้รับเงิน: %s\nเวลา: %s\nเลขที่ : %s",
+				transactionDetails.Amount,
+				transactionDetails.FromBank,
+				transactionDetails.Sender,
+				transactionDetails.Receiver,
+				transactionDetails.Timestamp,
+				transactionDetails.TransactionID,
+			))
+		}
 	}
 }
 
