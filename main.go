@@ -96,13 +96,15 @@ func handleTextMessage(event *linebot.Event, message *linebot.TextMessage) {
 func fetchDataFromAPI(input string) (string, error) {
 	apiURL := fmt.Sprintf("https://fast888.co/api/get_tr_detail/%s", input)
 	log.Printf("Sending request to API: %s", apiURL) // Log the request URL
-	resp, err := http.Get(apiURL)
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", apiURL, nil)
 	if err != nil {
-		fmt.Printf("Error sending request to API: %v\n", err)
+		fmt.Printf("Error creating request: %v\n", err)
 		return "", err
 	}
-	defer resp.Body.Close()
 
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36")
+	resp, err := client.Do(req)
 	if resp.StatusCode != http.StatusOK {
 		fmt.Printf("API returned non-200 status code: %d\n", resp.StatusCode)
 		return "", fmt.Errorf("API returned non-200 status code: %d", resp.StatusCode)
