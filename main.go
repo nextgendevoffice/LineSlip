@@ -72,16 +72,20 @@ func handleMessage(event *linebot.Event) {
 func handleTextMessage(event *linebot.Event, message *linebot.TextMessage) {
 	userID := event.Source.UserID
 
-	if !memberSystem.IsMember(userID) {
-		log.Printf("User %s is not a member", userID)
-		replyText(event.ReplyToken, "Please join by sending /join command")
+	if message.Text == "/join" {
+		if memberSystem.IsMember(userID) {
+			replyText(event.ReplyToken, "You are already a member")
+		} else {
+			memberSystem.AddMember(userID)
+			log.Printf("User %s joined", userID)
+			replyText(event.ReplyToken, "You are now a member")
+		}
 		return
 	}
 
-	if message.Text == "/join" {
-		memberSystem.AddMember(userID)
-		log.Printf("User %s joined", userID)
-		replyText(event.ReplyToken, "You are now a member")
+	if !memberSystem.IsMember(userID) {
+		log.Printf("User %s is not a member", userID)
+		replyText(event.ReplyToken, "Please join by sending /join command")
 		return
 	}
 
