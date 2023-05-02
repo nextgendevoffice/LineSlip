@@ -2,11 +2,13 @@ package main
 
 import (
 	"errors"
-	"image/png"
+	"image"
+	_ "image/jpeg"
+	_ "image/png"
 	"os"
 
-	"github.com/boombuler/barcode"
-	"github.com/nfnt/resize"
+	"github.com/kaxap/gozxing"
+	"github.com/kaxap/gozxing/qrcode"
 )
 
 func DecodeQRCode(filePath string) (string, error) {
@@ -16,21 +18,21 @@ func DecodeQRCode(filePath string) (string, error) {
 	}
 	defer file.Close()
 
-	img, err := png.Decode(file)
+	img, _, err := image.Decode(file)
 	if err != nil {
 		return "", err
 	}
 
-	// Resize the image if needed
-	img = resize.Resize(300, 0, img, resize.Bilinear)
+	bmp, _ := gozxing.NewBinaryBitmapFromImage(img)
+	qrReader := qrcode.NewQRCodeReader()
+	result, err := qrReader.Decode(bmp, nil)
 
-	qrCode, err := barcode.Decode(img)
 	if err != nil {
-		if _, ok := err.(barcode.ReaderError); ok {
+		if _, ok := err.(gozxing.NotFound); ok {
 			return "", errors.New("QR code not found")
 		}
 		return "", err
 	}
 
-	return qrCode.Content, nil
+	return result.GetText(), nil
 }

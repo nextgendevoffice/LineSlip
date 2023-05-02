@@ -3,7 +3,11 @@ module nextgendevoffice.com/qr-code-line-bot
 go 1.20
 
 require (
-	github.com/boombuler/barcode v1.0.1
+	github.com/kaxap/gozxing v1.0.5
 	github.com/line/line-bot-sdk-go v7.4.0+incompatible
-	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
+)
+
+require (
+	golang.org/x/text v0.9.0 // indirect
+	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 )
