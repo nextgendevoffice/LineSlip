@@ -95,6 +95,7 @@ func handleTextMessage(event *linebot.Event, message *linebot.TextMessage) {
 
 func fetchDataFromAPI(input string) (string, error) {
 	apiURL := fmt.Sprintf("https://fast888.co/api/get_tr_detail/%s", input)
+	log.Printf("Sending request to API: %s", apiURL) // Log the request URL
 	resp, err := http.Get(apiURL)
 	if err != nil {
 		fmt.Printf("Error sending request to API: %v\n", err)
@@ -114,8 +115,10 @@ func fetchDataFromAPI(input string) (string, error) {
 		return "", err
 	}
 
+	// Log the API response result
+	log.Printf("API response result: %v", result)
+
 	// Extract the desired information from the result map
-	// For example, if you want to extract the field "data"
 	data, ok := result["data"].(string)
 	if !ok {
 		fmt.Printf("Error extracting data field from API response: %v\n", result)
