@@ -60,6 +60,9 @@ func fetchTransactionDetails(qrString string) (*TransactionDetails, error) {
 		return nil, err
 	}
 
+	// Log the response body
+	log.Println("Response from API:", string(body))
+
 	var details TransactionDetails
 	err = json.Unmarshal(body, &details)
 	if err != nil {
