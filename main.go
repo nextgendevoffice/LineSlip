@@ -96,7 +96,7 @@ func handleImageMessage(event *linebot.Event, message *linebot.ImageMessage) {
 	userID := event.Source.UserID
 
 	if !memberSystem.IsMember(userID) {
-		replyText(event.ReplyToken, "Please join by sending /join command")
+		replyText(event.ReplyToken, "กรุณาใช้คำสั่ง /join เพื่อใช้งานเช็คสลิป")
 		return
 	}
 
