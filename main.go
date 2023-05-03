@@ -132,11 +132,11 @@ func handleTextMessage(event *linebot.Event, message *linebot.TextMessage) {
 
 	if message.Text == "/join" {
 		if memberSystem.IsMember(userID) {
-			replyText(event.ReplyToken, "คุณเป็นสมาชิกอยู่แล้วครับ")
+			replyText(event.ReplyToken, "You are already a member")
 		} else {
 			memberSystem.AddMember(userID)
 			log.Printf("User %s joined", userID)
-			replyText(event.ReplyToken, "คุณเข้าร่วมเป็นที่เรียบร้อย คุณสามารถส่งสลิปเพื่อเช็คได้เลยค่ะ")
+			replyText(event.ReplyToken, "You are now a member")
 		}
 		return
 	}
@@ -144,6 +144,13 @@ func handleTextMessage(event *linebot.Event, message *linebot.TextMessage) {
 	if !memberSystem.IsMember(userID) {
 		log.Printf("User %s is not a member", userID)
 		replyText(event.ReplyToken, "กรุณาใช้คำสั่ง /join เพื่อใช้งานเช็คสลิป")
+		return
+	}
+
+	if message.Text == "/join" {
+		memberSystem.AddMember(userID)
+		log.Printf("User %s joined", userID)
+		replyText(event.ReplyToken, "You are now a member")
 		return
 	}
 
